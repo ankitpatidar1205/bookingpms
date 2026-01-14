@@ -9,7 +9,8 @@ import {
   BellIcon,
   Cog6ToothIcon,
   ArrowLeftOnRectangleIcon,
-  CalendarDaysIcon
+  CalendarDaysIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../context/AuthContext';
 
@@ -20,11 +21,11 @@ const navigation = [
   { name: 'Users', href: '/admin/users', icon: UsersIcon },
   { name: 'Analytics', href: '/admin/analytics', icon: ChartBarIcon },
   { name: 'Audit Logs', href: '/admin/audit-logs', icon: ClipboardDocumentListIcon },
-  { name: 'Notifications', href: '/notifications', icon: BellIcon },
+  { name: 'Notifications', href: '/admin/notifications', icon: BellIcon },
   { name: 'Settings', href: '/admin/settings', icon: Cog6ToothIcon }
 ];
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ onClose }) {
   const location = useLocation();
   const { user, logout } = useAuth();
 
@@ -35,23 +36,38 @@ export default function AdminSidebar() {
     return location.pathname.startsWith(href);
   };
 
+  const handleNavClick = () => {
+    if (onClose) onClose();
+  };
+
   return (
-    <div className="w-72 bg-primary-500 min-h-screen flex flex-col">
+    <div className="w-60 bg-primary-500 min-h-screen flex flex-col">
       {/* Logo */}
-      <div className="flex items-center px-6 py-5 border-b border-white/10">
-        <div className="bg-white/15 p-2 rounded-xl">
-          <CalendarDaysIcon className="h-8 w-8 text-white" />
+      <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+        <div className="flex items-center">
+          <div className="bg-white/15 p-2 rounded-xl">
+            <CalendarDaysIcon className="h-8 w-8 text-white" />
+          </div>
+          <div className="ml-3">
+            <span className="text-xl font-bold text-white">BookingPMS</span>
+            <span className="block text-xs text-accent-400 font-medium">Admin Panel</span>
+          </div>
         </div>
-        <div className="ml-3">
-          <span className="text-xl font-bold text-white">BookingPMS</span>
-          <span className="block text-xs text-accent-400 font-medium">Admin Panel</span>
-        </div>
+        {/* Close button for mobile */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="lg:hidden p-2 rounded-lg text-white/80 hover:bg-white/10 transition-colors"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button>
+        )}
       </div>
 
       {/* Admin Profile */}
       <div className="mx-4 my-4 p-4 bg-white/10 rounded-xl border border-white/10">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-accent-500 rounded-full flex items-center justify-center">
+          <div className="w-10 h-10 bg-accent-500 rounded-full flex items-center justify-center flex-shrink-0">
             <span className="text-sm font-bold text-white">
               {user?.firstName?.[0]?.toUpperCase() || 'A'}
             </span>
@@ -74,6 +90,7 @@ export default function AdminSidebar() {
           <Link
             key={item.name}
             to={item.href}
+            onClick={handleNavClick}
             className={`
               flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
               ${isActive(item.href)
@@ -82,7 +99,7 @@ export default function AdminSidebar() {
               }
             `}
           >
-            <item.icon className={`h-5 w-5 mr-3 ${isActive(item.href) ? 'text-primary-500' : ''}`} />
+            <item.icon className={`h-5 w-5 mr-3 flex-shrink-0 ${isActive(item.href) ? 'text-primary-500' : ''}`} />
             {item.name}
           </Link>
         ))}
@@ -94,6 +111,7 @@ export default function AdminSidebar() {
           <Link
             key={item.name}
             to={item.href}
+            onClick={handleNavClick}
             className={`
               flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
               ${isActive(item.href)
@@ -102,7 +120,7 @@ export default function AdminSidebar() {
               }
             `}
           >
-            <item.icon className={`h-5 w-5 mr-3 ${isActive(item.href) ? 'text-primary-500' : ''}`} />
+            <item.icon className={`h-5 w-5 mr-3 flex-shrink-0 ${isActive(item.href) ? 'text-primary-500' : ''}`} />
             {item.name}
           </Link>
         ))}
@@ -111,7 +129,10 @@ export default function AdminSidebar() {
       {/* Logout */}
       <div className="p-4 border-t border-white/10">
         <button
-          onClick={logout}
+          onClick={() => {
+            logout();
+            if (onClose) onClose();
+          }}
           className="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium text-white/80 hover:bg-red-500/20 hover:text-red-300 transition-all duration-200"
         >
           <ArrowLeftOnRectangleIcon className="h-5 w-5 mr-3" />
