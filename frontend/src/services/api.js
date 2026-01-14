@@ -1,9 +1,10 @@
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import config from '../config';
 
 // Create axios instance
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: config.API_BASE_URL,
   headers: {
     'Content-Type': 'application/json'
   }
