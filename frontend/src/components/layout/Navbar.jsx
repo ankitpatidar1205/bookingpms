@@ -6,7 +6,8 @@ import {
   XMarkIcon,
   BellIcon,
   UserCircleIcon,
-  CalendarDaysIcon
+  CalendarDaysIcon,
+  ChevronDownIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../context/AuthContext';
 import { notificationService } from '../../services/notificationService';
@@ -44,13 +45,13 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="bg-gradient-to-r from-primary-600 to-primary-500 shadow-lg sticky top-0 z-50">
+    <nav className="bg-primary-500 shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-3 group">
-              <div className="bg-white/20 p-2 rounded-xl group-hover:bg-white/30 transition-colors">
+              <div className="bg-white/15 p-2 rounded-xl group-hover:bg-white/25 transition-colors">
                 <CalendarDaysIcon className="h-7 w-7 text-white" />
               </div>
               <span className="text-xl font-bold text-white tracking-tight">BookingPMS</span>
@@ -95,14 +96,15 @@ export default function Navbar() {
                 {/* User Menu */}
                 <Menu as="div" className="relative ml-2">
                   <Menu.Button className="flex items-center space-x-2 bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-lg transition-all duration-200">
-                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-semibold">
+                    <div className="w-8 h-8 bg-accent-500 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-semibold text-white">
                         {user.firstName?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
                       </span>
                     </div>
                     <span className="text-sm font-medium hidden lg:block">
                       {user.firstName || 'User'}
                     </span>
+                    <ChevronDownIcon className="h-4 w-4 hidden lg:block" />
                   </Menu.Button>
 
                   <Transition
@@ -118,6 +120,9 @@ export default function Navbar() {
                       <div className="px-4 py-3 border-b border-gray-100">
                         <p className="text-sm font-semibold text-gray-900">{user.firstName} {user.lastName}</p>
                         <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                        <span className="inline-block mt-1 text-xs px-2 py-0.5 bg-primary-100 text-primary-700 rounded-full font-medium">
+                          {user.role === 'ADMIN' ? 'Administrator' : 'User'}
+                        </span>
                       </div>
                       <Menu.Item>
                         {({ active }) => (
@@ -157,7 +162,7 @@ export default function Navbar() {
                 </Link>
                 <Link
                   to="/register"
-                  className="bg-white text-primary-600 px-5 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50 shadow-sm transition-all duration-200"
+                  className="bg-accent-500 hover:bg-accent-600 text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all duration-200"
                 >
                   Get Started
                 </Link>
@@ -193,7 +198,7 @@ export default function Navbar() {
         leaveFrom="opacity-100 translate-y-0"
         leaveTo="opacity-0 -translate-y-1"
       >
-        <div className="md:hidden bg-primary-700 border-t border-white/10">
+        <div className="md:hidden bg-primary-600 border-t border-white/10">
           <div className="px-4 py-4 space-y-1">
             {!isAuthenticated && guestLinks.map((link) => (
               <Link
@@ -208,6 +213,20 @@ export default function Navbar() {
 
             {isAuthenticated ? (
               <>
+                {/* User info */}
+                <div className="px-4 py-3 mb-2 bg-white/10 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-accent-500 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-bold text-white">
+                        {user.firstName?.[0]?.toUpperCase() || 'U'}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white">{user.firstName} {user.lastName}</p>
+                      <p className="text-xs text-white/70">{user.email}</p>
+                    </div>
+                  </div>
+                </div>
                 <Link
                   to={user.role === 'ADMIN' ? '/admin' : '/dashboard'}
                   className="block px-4 py-3 text-base font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg"
@@ -239,7 +258,7 @@ export default function Navbar() {
                     setMobileMenuOpen(false);
                     handleLogout();
                   }}
-                  className="block w-full text-left px-4 py-3 text-base font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg"
+                  className="block w-full text-left px-4 py-3 text-base font-medium text-red-300 hover:text-red-200 hover:bg-white/10 rounded-lg"
                 >
                   Sign Out
                 </button>
@@ -255,7 +274,7 @@ export default function Navbar() {
                 </Link>
                 <Link
                   to="/register"
-                  className="block px-4 py-3 text-base font-semibold bg-white text-primary-600 rounded-lg text-center"
+                  className="block px-4 py-3 text-base font-semibold bg-accent-500 text-white rounded-lg text-center"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Get Started

@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Button, Input } from '../../components/common';
+import { Button } from '../../components/common';
 import { CalendarDaysIcon, EnvelopeIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import toast from 'react-hot-toast';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -16,6 +17,14 @@ export default function Login() {
 
   const from = location.state?.from?.pathname || '/';
 
+  // Check for pending booking on mount
+  useEffect(() => {
+    const pendingBooking = sessionStorage.getItem('pendingBookingResource');
+    if (pendingBooking) {
+      toast('Please login to complete your booking', { icon: '🔐' });
+    }
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -23,8 +32,17 @@ export default function Login() {
 
     try {
       const user = await login(email, password);
+
+      // Check if there's a pending booking
+      const pendingBooking = sessionStorage.getItem('pendingBookingResource');
+
       if (user.role === 'ADMIN') {
+        sessionStorage.removeItem('pendingBookingResource');
         navigate('/admin', { replace: true });
+      } else if (pendingBooking) {
+        // Redirect to calendar with pending resource
+        navigate('/calendar', { replace: true });
+        toast.success('Now select your booking time on the calendar');
       } else {
         navigate(from === '/' ? '/dashboard' : from, { replace: true });
       }
@@ -38,10 +56,11 @@ export default function Login() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary-600 via-primary-500 to-teal-400 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-primary-500 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-20 w-72 h-72 bg-white rounded-full"></div>
           <div className="absolute bottom-20 right-20 w-96 h-96 bg-white rounded-full"></div>
+          <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-white rounded-full"></div>
         </div>
         <div className="relative z-10 flex flex-col justify-center px-16 text-white">
           <div className="flex items-center space-x-3 mb-8">
@@ -52,7 +71,7 @@ export default function Login() {
           </div>
           <h1 className="text-4xl font-extrabold mb-6 leading-tight">
             Manage Your Resources<br />
-            <span className="text-teal-200">Efficiently</span>
+            <span className="text-accent-300">Efficiently</span>
           </h1>
           <p className="text-lg text-white/80 max-w-md">
             Streamline your workspace scheduling with our powerful booking management system.
@@ -65,7 +84,7 @@ export default function Login() {
               { value: '500+', label: 'Resources' },
               { value: '99.9%', label: 'Uptime' }
             ].map((stat, i) => (
-              <div key={i} className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 text-center">
+              <div key={i} className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 text-center border border-white/10">
                 <div className="text-2xl font-bold">{stat.value}</div>
                 <div className="text-sm text-white/70">{stat.label}</div>
               </div>
@@ -157,7 +176,7 @@ export default function Login() {
             <div className="mt-6 text-center">
               <p className="text-gray-600">
                 Don't have an account?{' '}
-                <Link to="/register" className="font-semibold text-primary-600 hover:text-primary-500">
+                <Link to="/register" className="font-semibold text-primary-500 hover:text-primary-600">
                   Create account
                 </Link>
               </p>
@@ -165,7 +184,7 @@ export default function Login() {
           </div>
 
           {/* Demo Credentials */}
-          <div className="mt-6 bg-gradient-to-r from-primary-50 to-teal-50 border border-primary-100 rounded-xl p-4">
+          <div className="mt-6 bg-primary-50 border border-primary-100 rounded-xl p-4">
             <h4 className="text-sm font-semibold text-primary-800 mb-2 flex items-center">
               <svg className="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />

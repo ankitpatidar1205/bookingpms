@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/common';
 import { CalendarDaysIcon, EnvelopeIcon, LockClosedIcon, UserIcon } from '@heroicons/react/24/outline';
+import toast from 'react-hot-toast';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -17,6 +18,14 @@ export default function Register() {
 
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  // Check for pending booking on mount
+  useEffect(() => {
+    const pendingBooking = sessionStorage.getItem('pendingBookingResource');
+    if (pendingBooking) {
+      toast('Create an account to complete your booking', { icon: '🔐' });
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -64,7 +73,16 @@ export default function Register() {
         firstName: formData.firstName,
         lastName: formData.lastName
       });
-      navigate('/dashboard', { replace: true });
+
+      // Check if there's a pending booking
+      const pendingBooking = sessionStorage.getItem('pendingBookingResource');
+
+      if (pendingBooking) {
+        navigate('/calendar', { replace: true });
+        toast.success('Now select your booking time on the calendar');
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
     } catch (err) {
       setErrors({
         submit: err.response?.data?.message || 'Registration failed'
@@ -77,10 +95,11 @@ export default function Register() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary-600 via-primary-500 to-teal-400 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-primary-500 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-20 w-72 h-72 bg-white rounded-full"></div>
           <div className="absolute bottom-20 right-20 w-96 h-96 bg-white rounded-full"></div>
+          <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-white rounded-full"></div>
         </div>
         <div className="relative z-10 flex flex-col justify-center px-16 text-white">
           <div className="flex items-center space-x-3 mb-8">
@@ -91,7 +110,7 @@ export default function Register() {
           </div>
           <h1 className="text-4xl font-extrabold mb-6 leading-tight">
             Start Booking<br />
-            <span className="text-teal-200">Today</span>
+            <span className="text-accent-300">Today</span>
           </h1>
           <p className="text-lg text-white/80 max-w-md">
             Create your free account and get instant access to all our features.
@@ -105,7 +124,7 @@ export default function Register() {
               'Cancel anytime'
             ].map((item, i) => (
               <div key={i} className="flex items-center space-x-3">
-                <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                <div className="w-6 h-6 bg-accent-500 rounded-full flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
@@ -249,7 +268,7 @@ export default function Register() {
             <div className="mt-6 text-center">
               <p className="text-gray-600">
                 Already have an account?{' '}
-                <Link to="/login" className="font-semibold text-primary-600 hover:text-primary-500">
+                <Link to="/login" className="font-semibold text-primary-500 hover:text-primary-600">
                   Sign in
                 </Link>
               </p>
