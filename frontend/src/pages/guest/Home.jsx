@@ -139,10 +139,10 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Hero Image/Illustration - Calendar Preview */}
+            {/* Hero Image/Illustration - Calendar Preview - Clickable */}
             <div className="hidden lg:block">
-              <div className="relative">
-                <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/20">
+              <Link to="/calendar" className="block relative group cursor-pointer">
+                <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/20 transition-all duration-300 group-hover:bg-white/20 group-hover:scale-[1.02] group-hover:shadow-2xl">
                   {/* Calendar Header */}
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-white font-semibold">January 2026</span>
@@ -166,11 +166,11 @@ export default function Home() {
                       return (
                         <div
                           key={i}
-                          className={`h-10 rounded-lg flex items-center justify-center text-sm ${
+                          className={`h-10 rounded-lg flex items-center justify-center text-sm transition-colors ${
                             day < 1 || day > 31 ? 'text-white/20' :
                             isToday ? 'bg-accent-500 text-white font-bold' :
                             isBooked ? 'bg-white/30 text-white' :
-                            'bg-white/10 text-white/80 hover:bg-white/20'
+                            'bg-white/10 text-white/80'
                           }`}
                         >
                           {day >= 1 && day <= 31 ? day : ''}
@@ -186,10 +186,17 @@ export default function Home() {
                       <div className="w-3 h-3 rounded-full bg-white/30 ml-3"></div>
                       <span className="text-white/70 text-xs">Booked</span>
                     </div>
-                    <span className="text-white/60 text-xs">5 bookings this week</span>
+                    <span className="text-white/60 text-xs">Click to view calendar</span>
                   </div>
                 </div>
-              </div>
+                {/* Hover Overlay */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="bg-accent-500 text-white px-4 py-2 rounded-xl font-semibold flex items-center shadow-lg">
+                    <CalendarDaysIcon className="h-5 w-5 mr-2" />
+                    Open Calendar
+                  </div>
+                </div>
+              </Link>
             </div>
           </div>
         </div>
