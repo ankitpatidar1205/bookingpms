@@ -1,7 +1,5 @@
-// ============================================================================
-// BOOKINGPMS - COMPLETE PRISMA SCHEMA
-// Production-Ready Resource & Booking Management System
-// ============================================================================
+// BookingPMS - Prisma Schema
+// Compatible with existing services
 
 generator client {
   provider = "prisma-client-js"
@@ -12,992 +10,236 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================================================
-// ENUMS - All Status and Type Definitions
-// ============================================================================
+// ==========================================
+// ENUMS
+// ==========================================
 
 enum Role {
-  SUPER_ADMIN
-  ADMIN
-  MANAGER
   USER
-  GUEST
-}
-
-enum ResourceStatus {
-  AVAILABLE
-  BOOKED
-  MAINTENANCE
-  UNAVAILABLE
-  RETIRED
+  ADMIN
 }
 
 enum BookingStatus {
   PENDING
   CONFIRMED
-  IN_PROGRESS
-  COMPLETED
   CANCELLED
-  NO_SHOW
-  REFUNDED
+  COMPLETED
 }
 
-enum PaymentStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  FAILED
-  REFUNDED
-  CANCELLED
+enum ResourceStatus {
+  AVAILABLE
+  UNAVAILABLE
+  MAINTENANCE
 }
 
-enum PaymentMethod {
-  CREDIT_CARD
-  DEBIT_CARD
-  PAYPAL
-  BANK_TRANSFER
-  CASH
-  WALLET
-  OTHER
+enum NotificationType {
+  BOOKING_CREATED
+  BOOKING_CANCELLED
+  BOOKING_REMINDER
+  WELCOME
+  SYSTEM
 }
 
 enum MessageType {
   EMAIL
   SMS
   PUSH
-  IN_APP
 }
 
 enum MessageStatus {
-  QUEUED
-  SENDING
+  PENDING
   SENT
-  DELIVERED
   FAILED
-  BOUNCED
 }
 
-enum NotificationType {
-  BOOKING_CREATED
-  BOOKING_CONFIRMED
-  BOOKING_CANCELLED
-  BOOKING_REMINDER
-  PAYMENT_RECEIVED
-  PAYMENT_FAILED
-  SYSTEM_ALERT
-  PROMOTIONAL
-  WELCOME
-  PASSWORD_RESET
-}
-
-enum AuditAction {
-  CREATE
-  READ
-  UPDATE
-  DELETE
-  LOGIN
-  LOGOUT
-  EXPORT
-  IMPORT
-  BLOCK
-  UNBLOCK
-  ACTIVATE
-  DEACTIVATE
-}
-
-enum BlockReason {
-  MAINTENANCE
-  HOLIDAY
-  PRIVATE_EVENT
-  CLEANING
-  RENOVATION
-  EMERGENCY
-  OTHER
-}
-
-enum DayOfWeek {
-  MONDAY
-  TUESDAY
-  WEDNESDAY
-  THURSDAY
-  FRIDAY
-  SATURDAY
-  SUNDAY
-}
-
-// ============================================================================
-// USER & AUTHENTICATION MODELS
-// ============================================================================
+// ==========================================
+// USER MANAGEMENT
+// ==========================================
 
 model User {
-  id                String    @id @default(uuid())
-  email             String    @unique
-  password          String
-  firstName         String?   @db.VarChar(100)
-  lastName          String?   @db.VarChar(100)
-  phone             String?   @db.VarChar(20)
-  avatarUrl         String?   @db.VarChar(500)
-  role              Role      @default(USER)
-  isActive          Boolean   @default(true)
-  isEmailVerified   Boolean   @default(false)
-  isPhoneVerified   Boolean   @default(false)
-  emailVerifiedAt   DateTime?
-  phoneVerifiedAt   DateTime?
-  lastLoginAt       DateTime?
-  lastLoginIp       String?   @db.VarChar(50)
-  failedLoginCount  Int       @default(0)
-  lockedUntil       DateTime?
-  preferredLanguage String    @default("en") @db.VarChar(10)
-  timezone          String    @default("UTC") @db.VarChar(50)
-
-  // Soft delete
-  deletedAt         DateTime?
-  deletedBy         String?
-
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  role      Role     @default(USER)
+  isActive  Boolean  @default(true)
+  avatarUrl String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  bookings          Booking[]
-  notifications     Notification[]
-  auditLogs         AuditLog[]
-  apiKeys           ApiKey[]
-  messageLogs       MessageLog[]
-  refreshTokens     RefreshToken[]
-  payments          Payment[]
-  reviews           Review[]
-  favorites         Favorite[]
-  createdResources  Resource[]       @relation("ResourceCreatedBy")
-  addresses         UserAddress[]
-  preferences       UserPreference?
+  bookings       Booking[]
+  notifications  Notification[]
+  auditLogs      AuditLog[]
+  resourceBlocks ResourceBlock[]
+  messageLogs    MessageLog[]
 
   @@index([email])
   @@index([role])
-  @@index([isActive])
-  @@index([createdAt])
-  @@index([deletedAt])
   @@map("users")
 }
 
-model UserAddress {
-  id          String  @id @default(uuid())
-  userId      String
-  label       String  @default("Home") @db.VarChar(50)
-  addressLine1 String @db.VarChar(255)
-  addressLine2 String? @db.VarChar(255)
-  city        String  @db.VarChar(100)
-  state       String? @db.VarChar(100)
-  postalCode  String? @db.VarChar(20)
-  country     String  @db.VarChar(100)
-  isDefault   Boolean @default(false)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@map("user_addresses")
-}
-
-model UserPreference {
-  id                    String  @id @default(uuid())
-  userId                String  @unique
-  emailNotifications    Boolean @default(true)
-  smsNotifications      Boolean @default(false)
-  pushNotifications     Boolean @default(true)
-  marketingEmails       Boolean @default(false)
-  bookingReminders      Boolean @default(true)
-  reminderHoursBefore   Int     @default(24)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("user_preferences")
-}
-
-model RefreshToken {
-  id          String   @id @default(uuid())
-  token       String   @unique @db.VarChar(500)
-  userId      String
-  deviceInfo  String?  @db.VarChar(255)
-  ipAddress   String?  @db.VarChar(50)
-  expiresAt   DateTime
-  isRevoked   Boolean  @default(false)
-  revokedAt   DateTime?
-  revokedBy   String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-  @@index([token])
-  @@index([expiresAt])
-  @@map("refresh_tokens")
-}
-
-// ============================================================================
-// RESOURCE & CATEGORY MODELS
-// ============================================================================
-
-model ResourceCategory {
-  id          String  @id @default(uuid())
-  name        String  @db.VarChar(100)
-  slug        String  @unique @db.VarChar(100)
-  description String? @db.Text
-  imageUrl    String? @db.VarChar(500)
-  icon        String? @db.VarChar(50)
-  color       String? @db.VarChar(20)
-  sortOrder   Int     @default(0)
-  isActive    Boolean @default(true)
-
-  parentId    String?
-  parent      ResourceCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
-  children    ResourceCategory[] @relation("CategoryHierarchy")
-
-  resources Resource[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([slug])
-  @@index([parentId])
-  @@index([isActive])
-  @@map("resource_categories")
-}
+// ==========================================
+// RESOURCE MANAGEMENT
+// ==========================================
 
 model Resource {
-  id              String         @id @default(uuid())
-  name            String         @db.VarChar(200)
-  slug            String         @unique @db.VarChar(200)
-  description     String?        @db.Text
-  shortDescription String?       @db.VarChar(500)
-  type            String         @db.VarChar(100)
-  categoryId      String?
-  capacity        Int
-  minBookingHours Int            @default(1)
-  maxBookingHours Int            @default(8)
-  pricePerHour    Decimal        @db.Decimal(10, 2)
-  pricePerDay     Decimal?       @db.Decimal(10, 2)
-  depositAmount   Decimal?       @db.Decimal(10, 2)
-  currency        String         @default("USD") @db.VarChar(3)
-  status          ResourceStatus @default(AVAILABLE)
-
-  // Location
-  location        String?        @db.VarChar(255)
-  address         String?        @db.VarChar(500)
-  latitude        Decimal?       @db.Decimal(10, 8)
-  longitude       Decimal?       @db.Decimal(11, 8)
-  floor           String?        @db.VarChar(50)
-  building        String?        @db.VarChar(100)
-
-  // Media
-  imageUrl        String?        @db.VarChar(500)
-  thumbnailUrl    String?        @db.VarChar(500)
-  galleryImages   Json?          // Array of image URLs
-  videoUrl        String?        @db.VarChar(500)
-
-  // Features & Amenities (JSON array)
-  amenities       Json?
-  features        Json?
-  equipment       Json?
-  rules           Json?
-
-  // Availability settings
-  advanceBookingDays    Int      @default(30)
-  cancellationHours     Int      @default(24)
-  autoConfirm           Boolean  @default(true)
-  requiresApproval      Boolean  @default(false)
-  allowInstantBooking   Boolean  @default(true)
-
-  // Statistics (denormalized for performance)
-  totalBookings   Int            @default(0)
-  averageRating   Decimal?       @db.Decimal(3, 2)
-  reviewCount     Int            @default(0)
-
-  // Metadata
-  tags            Json?
-  metadata        Json?
-
-  // Soft delete
-  deletedAt       DateTime?
-  deletedBy       String?
-
-  // Audit
-  createdById     String?
-  createdBy       User?          @relation("ResourceCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-
-  category        ResourceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String         @id @default(uuid())
+  name         String
+  description  String?        @db.Text
+  type         String
+  capacity     Int            @default(1)
+  pricePerHour Decimal        @db.Decimal(10, 2)
+  status       ResourceStatus @default(AVAILABLE)
+  imageUrl     String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 
   // Relations
-  bookings        Booking[]
-  blocks          ResourceBlock[]
-  reviews         Review[]
-  favorites       Favorite[]
-  pricing         ResourcePricing[]
-  availability    ResourceAvailability[]
-  images          ResourceImage[]
+  bookings       Booking[]
+  resourceBlocks ResourceBlock[]
 
-  @@index([slug])
-  @@index([categoryId])
-  @@index([status])
   @@index([type])
-  @@index([pricePerHour])
-  @@index([averageRating])
-  @@index([createdAt])
-  @@index([deletedAt])
+  @@index([status])
   @@map("resources")
 }
 
-model ResourceImage {
-  id          String  @id @default(uuid())
-  resourceId  String
-  url         String  @db.VarChar(500)
-  thumbnailUrl String? @db.VarChar(500)
-  altText     String? @db.VarChar(255)
-  caption     String? @db.VarChar(500)
-  sortOrder   Int     @default(0)
-  isPrimary   Boolean @default(false)
-
-  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-
-  @@index([resourceId])
-  @@map("resource_images")
-}
-
-model ResourcePricing {
-  id           String   @id @default(uuid())
-  resourceId   String
-  name         String   @db.VarChar(100)
-  description  String?  @db.VarChar(500)
-  pricePerHour Decimal  @db.Decimal(10, 2)
-  pricePerDay  Decimal? @db.Decimal(10, 2)
-  minHours     Int      @default(1)
-  maxHours     Int?
-  validFrom    DateTime?
-  validUntil   DateTime?
-  isWeekend    Boolean  @default(false)
-  isHoliday    Boolean  @default(false)
-  isActive     Boolean  @default(true)
-
-  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([resourceId])
-  @@index([isActive])
-  @@map("resource_pricing")
-}
-
-model ResourceAvailability {
-  id          String    @id @default(uuid())
-  resourceId  String
-  dayOfWeek   DayOfWeek
-  startTime   String    @db.VarChar(5) // "09:00" format
-  endTime     String    @db.VarChar(5) // "17:00" format
-  isAvailable Boolean   @default(true)
-
-  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([resourceId, dayOfWeek])
-  @@index([resourceId])
-  @@map("resource_availability")
-}
-
-// ============================================================================
-// BOOKING & SCHEDULING MODELS
-// ============================================================================
+// ==========================================
+// BOOKING MANAGEMENT
+// ==========================================
 
 model Booking {
-  id              String        @id @default(uuid())
-  bookingNumber   String        @unique @db.VarChar(20)
-  userId          String
-  resourceId      String
-
-  // Time
-  startTime       DateTime
-  endTime         DateTime
-  duration        Int           // in minutes
-  timezone        String        @default("UTC") @db.VarChar(50)
-
-  // Pricing
-  pricePerHour    Decimal       @db.Decimal(10, 2)
-  subtotal        Decimal       @db.Decimal(10, 2)
-  taxAmount       Decimal       @default(0) @db.Decimal(10, 2)
-  discountAmount  Decimal       @default(0) @db.Decimal(10, 2)
-  totalPrice      Decimal       @db.Decimal(10, 2)
-  currency        String        @default("USD") @db.VarChar(3)
-  depositPaid     Decimal       @default(0) @db.Decimal(10, 2)
-
-  // Status
-  status          BookingStatus @default(PENDING)
-  paymentStatus   PaymentStatus @default(PENDING)
-
-  // Additional info
-  notes           String?       @db.Text
-  internalNotes   String?       @db.Text
-  specialRequests String?       @db.Text
-  attendeesCount  Int           @default(1)
-
-  // Contact for this booking (can be different from user)
-  contactName     String?       @db.VarChar(200)
-  contactEmail    String?       @db.VarChar(255)
-  contactPhone    String?       @db.VarChar(20)
-
-  // Cancellation
-  cancelledAt     DateTime?
-  cancelledBy     String?
-  cancellationReason String?    @db.Text
-  refundAmount    Decimal?      @db.Decimal(10, 2)
-
-  // Confirmation
-  confirmedAt     DateTime?
-  confirmedBy     String?
-  confirmationCode String?      @db.VarChar(20)
-
-  // Check-in/out
-  checkedInAt     DateTime?
-  checkedOutAt    DateTime?
-  checkedInBy     String?
-
-  // Reminders
-  reminderSentAt  DateTime?
-  followUpSentAt  DateTime?
-
-  // Source tracking
-  source          String?       @db.VarChar(50) // web, mobile, api, admin
-  referralCode    String?       @db.VarChar(50)
-  couponCode      String?       @db.VarChar(50)
-
-  // Metadata
-  metadata        Json?
+  id         String        @id @default(uuid())
+  userId     String
+  resourceId String
+  startTime  DateTime
+  endTime    DateTime
+  totalPrice Decimal       @db.Decimal(10, 2)
+  status     BookingStatus @default(PENDING)
+  notes      String?       @db.Text
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
 
   // Relations
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  payments Payment[]
-  review   Review?
-
   @@index([userId])
   @@index([resourceId])
   @@index([status])
-  @@index([paymentStatus])
   @@index([startTime])
   @@index([endTime])
-  @@index([startTime, endTime])
-  @@index([bookingNumber])
-  @@index([createdAt])
   @@map("bookings")
 }
 
+// ==========================================
+// RESOURCE BLOCKING (Calendar Blocks)
+// ==========================================
+
 model ResourceBlock {
-  id          String      @id @default(uuid())
-  resourceId  String
-  startTime   DateTime
-  endTime     DateTime
-  reason      BlockReason @default(OTHER)
-  title       String?     @db.VarChar(200)
-  description String?     @db.Text
-  isAllDay    Boolean     @default(false)
-  isRecurring Boolean     @default(false)
-  recurringPattern Json?  // For recurring blocks
+  id         String   @id @default(uuid())
+  resourceId String
+  startTime  DateTime
+  endTime    DateTime
+  reason     String?
+  createdBy  String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  createdById String?
-
+  // Relations
   resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  creator  User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
 
   @@index([resourceId])
   @@index([startTime])
   @@index([endTime])
-  @@index([startTime, endTime])
   @@map("resource_blocks")
 }
 
-// ============================================================================
-// PAYMENT MODELS
-// ============================================================================
-
-model Payment {
-  id                String        @id @default(uuid())
-  paymentNumber     String        @unique @db.VarChar(30)
-  bookingId         String
-  userId            String
-
-  amount            Decimal       @db.Decimal(10, 2)
-  currency          String        @default("USD") @db.VarChar(3)
-  status            PaymentStatus @default(PENDING)
-  method            PaymentMethod
-
-  // Provider info
-  providerName      String?       @db.VarChar(50) // stripe, paypal, etc
-  providerPaymentId String?       @db.VarChar(255)
-  providerResponse  Json?
-
-  // Card info (masked)
-  cardLast4         String?       @db.VarChar(4)
-  cardBrand         String?       @db.VarChar(20)
-
-  // Refund info
-  refundedAmount    Decimal?      @db.Decimal(10, 2)
-  refundedAt        DateTime?
-  refundReason      String?       @db.Text
-
-  // Metadata
-  description       String?       @db.VarChar(500)
-  receiptUrl        String?       @db.VarChar(500)
-  invoiceUrl        String?       @db.VarChar(500)
-  metadata          Json?
-
-  paidAt            DateTime?
-  failedAt          DateTime?
-  failureReason     String?       @db.Text
-
-  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([bookingId])
-  @@index([userId])
-  @@index([status])
-  @@index([paymentNumber])
-  @@index([createdAt])
-  @@map("payments")
-}
-
-// ============================================================================
-// REVIEW & RATING MODELS
-// ============================================================================
-
-model Review {
-  id          String  @id @default(uuid())
-  bookingId   String  @unique
-  userId      String
-  resourceId  String
-
-  rating      Int     // 1-5 stars
-  title       String? @db.VarChar(200)
-  comment     String? @db.Text
-
-  // Detailed ratings
-  cleanlinessRating   Int?
-  locationRating      Int?
-  valueRating         Int?
-  serviceRating       Int?
-
-  // Response from admin
-  responseText        String?   @db.Text
-  respondedAt         DateTime?
-  respondedBy         String?
-
-  // Moderation
-  isApproved    Boolean   @default(false)
-  isVerified    Boolean   @default(false)
-  approvedAt    DateTime?
-  approvedBy    String?
-
-  // Helpful votes
-  helpfulCount  Int       @default(0)
-  reportCount   Int       @default(0)
-
-  isPublic      Boolean   @default(true)
-
-  booking  Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([resourceId])
-  @@index([rating])
-  @@index([isApproved])
-  @@index([createdAt])
-  @@map("reviews")
-}
-
-model Favorite {
-  id         String @id @default(uuid())
-  userId     String
-  resourceId String
-
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-
-  @@unique([userId, resourceId])
-  @@index([userId])
-  @@index([resourceId])
-  @@map("favorites")
-}
-
-// ============================================================================
-// NOTIFICATION MODELS
-// ============================================================================
+// ==========================================
+// NOTIFICATIONS
+// ==========================================
 
 model Notification {
   id        String           @id @default(uuid())
   userId    String
-  type      NotificationType @default(SYSTEM_ALERT)
-  title     String           @db.VarChar(255)
+  type      NotificationType
+  title     String
   message   String           @db.Text
-  data      Json?            // Additional data like bookingId, resourceId etc
-  imageUrl  String?          @db.VarChar(500)
-  actionUrl String?          @db.VarChar(500)
   isRead    Boolean          @default(false)
-  readAt    DateTime?
+  metadata  Json?
+  createdAt DateTime         @default(now())
 
-  // Scheduling
-  scheduledFor DateTime?
-  sentAt       DateTime?
-  expiresAt    DateTime?
-
+  // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-
   @@index([userId])
-  @@index([type])
   @@index([isRead])
   @@index([createdAt])
   @@map("notifications")
 }
 
-// ============================================================================
-// MESSAGE & COMMUNICATION MODELS
-// ============================================================================
+// ==========================================
+// MESSAGE/EMAIL LOGS
+// ==========================================
 
 model MessageLog {
-  id           String        @id @default(uuid())
-  type         MessageType
-  status       MessageStatus @default(QUEUED)
+  id        String        @id @default(uuid())
+  userId    String?
+  type      MessageType
+  recipient String
+  subject   String?
+  content   String        @db.Text
+  status    MessageStatus @default(PENDING)
+  error     String?       @db.Text
+  sentAt    DateTime?
+  createdAt DateTime      @default(now())
 
-  // Recipient
-  to           String        @db.VarChar(255)
-  cc           String?       @db.VarChar(500)
-  bcc          String?       @db.VarChar(500)
-
-  // Content
-  subject      String?       @db.VarChar(500)
-  content      String        @db.Text
-  htmlContent  String?       @db.LongText
-  templateId   String?       @db.VarChar(100)
-  templateData Json?
-
-  // Provider
-  provider     String?       @db.VarChar(50)
-  providerId   String?       @db.VarChar(255)
-  providerResponse Json?
-
-  // Status tracking
-  sentAt       DateTime?
-  deliveredAt  DateTime?
-  openedAt     DateTime?
-  clickedAt    DateTime?
-  bouncedAt    DateTime?
-  failedAt     DateTime?
-  failureReason String?      @db.Text
-
-  // Retry
-  retryCount   Int           @default(0)
-  maxRetries   Int           @default(3)
-  nextRetryAt  DateTime?
-
-  userId       String?
-  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  // Relations
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId])
-  @@index([type])
   @@index([status])
-  @@index([createdAt])
+  @@index([type])
   @@map("message_logs")
 }
 
-model MessageTemplate {
-  id          String      @id @default(uuid())
-  name        String      @unique @db.VarChar(100)
-  type        MessageType
-  subject     String?     @db.VarChar(500)
-  content     String      @db.Text
-  htmlContent String?     @db.LongText
-  variables   Json?       // List of available variables
-  isActive    Boolean     @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([type])
-  @@index([isActive])
-  @@map("message_templates")
-}
-
-// ============================================================================
-// AUDIT & LOGGING MODELS
-// ============================================================================
+// ==========================================
+// AUDIT LOGS
+// ==========================================
 
 model AuditLog {
-  id          String      @id @default(uuid())
-  userId      String
-  action      AuditAction
-  entity      String      @db.VarChar(100)
-  entityId    String      @db.VarChar(100)
-
-  // Change tracking
-  oldValues   Json?
-  newValues   Json?
-  changedFields Json?     // List of changed field names
-
-  // Request info
-  ipAddress   String?     @db.VarChar(50)
-  userAgent   String?     @db.VarChar(500)
-  requestUrl  String?     @db.VarChar(500)
-  requestMethod String?   @db.VarChar(10)
-
-  // Additional context
-  description String?     @db.Text
-  metadata    Json?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  ipAddress String?
+  details   Json?
   createdAt DateTime @default(now())
 
+  // Relations
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
   @@index([userId])
-  @@index([entity])
-  @@index([entityId])
   @@index([action])
+  @@index([entity])
   @@index([createdAt])
   @@map("audit_logs")
 }
 
-model SystemLog {
-  id        String @id @default(uuid())
-  level     String @db.VarChar(20) // error, warn, info, debug
-  message   String @db.Text
-  context   Json?
-  stack     String? @db.Text
-  source    String? @db.VarChar(100)
-
-  createdAt DateTime @default(now())
-
-  @@index([level])
-  @@index([createdAt])
-  @@map("system_logs")
-}
-
-// ============================================================================
-// API & INTEGRATION MODELS
-// ============================================================================
-
-model ApiKey {
-  id          String    @id @default(uuid())
-  key         String    @unique @db.VarChar(100)
-  secretHash  String    @db.VarChar(255)
-  name        String    @db.VarChar(100)
-  description String?   @db.Text
-  permissions Json?     // Array of allowed endpoints/actions
-  rateLimit   Int       @default(1000) // requests per hour
-
-  userId      String
-
-  isActive    Boolean   @default(true)
-  expiresAt   DateTime?
-  lastUsedAt  DateTime?
-  lastUsedIp  String?   @db.VarChar(50)
-  usageCount  Int       @default(0)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([key])
-  @@index([userId])
-  @@index([isActive])
-  @@map("api_keys")
-}
-
-model Webhook {
-  id          String  @id @default(uuid())
-  url         String  @db.VarChar(500)
-  name        String  @db.VarChar(100)
-  description String? @db.Text
-  secret      String  @db.VarChar(255)
-  events      Json    // Array of event types to trigger
-  headers     Json?   // Custom headers to send
-
-  isActive    Boolean @default(true)
-
-  // Statistics
-  totalCalls     Int      @default(0)
-  successfulCalls Int     @default(0)
-  failedCalls    Int      @default(0)
-  lastCalledAt   DateTime?
-  lastStatus     Int?
-  lastError      String?  @db.Text
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  deliveries WebhookDelivery[]
-
-  @@index([isActive])
-  @@map("webhooks")
-}
-
-model WebhookDelivery {
-  id          String @id @default(uuid())
-  webhookId   String
-  event       String @db.VarChar(100)
-  payload     Json
-
-  // Response
-  statusCode  Int?
-  response    Json?
-  duration    Int?   // in milliseconds
-
-  // Error handling
-  error       String? @db.Text
-  retryCount  Int     @default(0)
-  nextRetryAt DateTime?
-
-  deliveredAt DateTime?
-
-  webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-
-  @@index([webhookId])
-  @@index([event])
-  @@index([createdAt])
-  @@map("webhook_deliveries")
-}
-
-// ============================================================================
-// SETTINGS & CONFIGURATION MODELS
-// ============================================================================
+// ==========================================
+// SYSTEM SETTINGS
+// ==========================================
 
 model Setting {
-  id          String  @id @default(uuid())
-  key         String  @unique @db.VarChar(100)
-  value       String  @db.Text
-  type        String  @default("string") @db.VarChar(20) // string, number, boolean, json
-  group       String  @default("general") @db.VarChar(50)
-  label       String? @db.VarChar(200)
-  description String? @db.Text
-  isPublic    Boolean @default(false)
-  isEditable  Boolean @default(true)
-
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String   @db.Text
+  type      String   @default("string")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([key])
-  @@index([group])
   @@map("settings")
-}
-
-model Holiday {
-  id          String   @id @default(uuid())
-  name        String   @db.VarChar(200)
-  date        DateTime @db.Date
-  isRecurring Boolean  @default(false)
-  affectsAll  Boolean  @default(true)
-  resourceIds Json?    // If not affectsAll, specific resource IDs
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([date])
-  @@map("holidays")
-}
-
-model Coupon {
-  id              String    @id @default(uuid())
-  code            String    @unique @db.VarChar(50)
-  name            String    @db.VarChar(200)
-  description     String?   @db.Text
-  discountType    String    @db.VarChar(20) // percentage, fixed
-  discountValue   Decimal   @db.Decimal(10, 2)
-  maxDiscount     Decimal?  @db.Decimal(10, 2)
-  minBookingValue Decimal?  @db.Decimal(10, 2)
-
-  usageLimit      Int?
-  usageCount      Int       @default(0)
-  userLimit       Int       @default(1) // per user
-
-  validFrom       DateTime?
-  validUntil      DateTime?
-  isActive        Boolean   @default(true)
-
-  // Restrictions
-  applicableResourceIds Json?
-  applicableCategoryIds Json?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([code])
-  @@index([isActive])
-  @@map("coupons")
-}
-
-// ============================================================================
-// ANALYTICS & REPORTING MODELS
-// ============================================================================
-
-model DailyAnalytics {
-  id            String   @id @default(uuid())
-  date          DateTime @db.Date
-  resourceId    String?
-
-  // Booking metrics
-  totalBookings     Int @default(0)
-  confirmedBookings Int @default(0)
-  cancelledBookings Int @default(0)
-  completedBookings Int @default(0)
-
-  // Revenue metrics
-  totalRevenue      Decimal @default(0) @db.Decimal(12, 2)
-  refundedAmount    Decimal @default(0) @db.Decimal(12, 2)
-  netRevenue        Decimal @default(0) @db.Decimal(12, 2)
-
-  // Utilization
-  totalHoursBooked  Decimal @default(0) @db.Decimal(10, 2)
-  utilizationRate   Decimal @default(0) @db.Decimal(5, 2) // percentage
-
-  // User metrics
-  uniqueUsers       Int @default(0)
-  newUsers          Int @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([date, resourceId])
-  @@index([date])
-  @@index([resourceId])
-  @@map("daily_analytics")
 }
