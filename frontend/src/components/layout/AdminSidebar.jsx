@@ -21,7 +21,7 @@ const navigation = [
   { name: 'Users', href: '/admin/users', icon: UsersIcon },
   { name: 'Analytics', href: '/admin/analytics', icon: ChartBarIcon },
   { name: 'Audit Logs', href: '/admin/audit-logs', icon: ClipboardDocumentListIcon },
-  { name: 'Notifications', href: '/notifications', icon: BellIcon },
+  { name: 'Notifications', href: '/admin/notifications', icon: BellIcon },
   { name: 'Settings', href: '/admin/settings', icon: Cog6ToothIcon }
 ];
 
@@ -41,7 +41,7 @@ export default function AdminSidebar({ onClose }) {
   };
 
   return (
-    <div className="w-72 bg-primary-500 min-h-screen flex flex-col">
+    <div className="w-60 bg-primary-500 min-h-screen flex flex-col">
       {/* Logo */}
       <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
         <div className="flex items-center">

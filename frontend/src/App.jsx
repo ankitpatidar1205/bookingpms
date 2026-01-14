@@ -86,6 +86,7 @@ function App() {
         <Route path="calendar" element={<AdminCalendar />} />
         <Route path="audit-logs" element={<AuditLogs />} />
         <Route path="analytics" element={<AdminDashboard />} />
+        <Route path="notifications" element={<Notifications />} />
         <Route path="settings" element={<Profile />} />
       </Route>
 

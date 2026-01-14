@@ -139,27 +139,54 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Hero Image/Illustration */}
+            {/* Hero Image/Illustration - Calendar Preview */}
             <div className="hidden lg:block">
               <div className="relative">
-                <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
-                  <div className="grid grid-cols-3 gap-4">
-                    {[...Array(9)].map((_, i) => (
-                      <div
-                        key={i}
-                        className={`h-16 rounded-xl ${
-                          i % 3 === 0 ? 'bg-accent-500/50' : i % 2 === 0 ? 'bg-white/20' : 'bg-white/10'
-                        }`}
-                      />
+                <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/20">
+                  {/* Calendar Header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-white font-semibold">January 2026</span>
+                    <div className="flex space-x-2">
+                      <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white text-sm">&lt;</div>
+                      <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white text-sm">&gt;</div>
+                    </div>
+                  </div>
+                  {/* Calendar Days */}
+                  <div className="grid grid-cols-7 gap-2 text-center text-xs text-white/60 mb-2">
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                      <span key={day}>{day}</span>
                     ))}
                   </div>
-                  <div className="mt-4 flex items-center justify-between">
-                    <div className="flex -space-x-2">
-                      {[...Array(4)].map((_, i) => (
-                        <div key={i} className="w-8 h-8 rounded-full bg-accent-500 border-2 border-white/20" />
-                      ))}
+                  {/* Calendar Grid */}
+                  <div className="grid grid-cols-7 gap-2">
+                    {[...Array(35)].map((_, i) => {
+                      const day = i - 2;
+                      const isBooked = [5, 12, 15, 20, 25].includes(day);
+                      const isToday = day === 14;
+                      return (
+                        <div
+                          key={i}
+                          className={`h-10 rounded-lg flex items-center justify-center text-sm ${
+                            day < 1 || day > 31 ? 'text-white/20' :
+                            isToday ? 'bg-accent-500 text-white font-bold' :
+                            isBooked ? 'bg-white/30 text-white' :
+                            'bg-white/10 text-white/80 hover:bg-white/20'
+                          }`}
+                        >
+                          {day >= 1 && day <= 31 ? day : ''}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {/* Stats */}
+                  <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 rounded-full bg-accent-500"></div>
+                      <span className="text-white/70 text-xs">Today</span>
+                      <div className="w-3 h-3 rounded-full bg-white/30 ml-3"></div>
+                      <span className="text-white/70 text-xs">Booked</span>
                     </div>
-                    <span className="text-white/80 text-sm">+2.5k users this month</span>
+                    <span className="text-white/60 text-xs">5 bookings this week</span>
                   </div>
                 </div>
               </div>

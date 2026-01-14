@@ -36,7 +36,7 @@ export default function UserSidebar({ onClose }) {
   };
 
   return (
-    <div className="w-72 bg-primary-500 min-h-screen flex flex-col">
+    <div className="w-60 bg-primary-500 min-h-screen flex flex-col">
       {/* Logo */}
       <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
         <div className="flex items-center">
