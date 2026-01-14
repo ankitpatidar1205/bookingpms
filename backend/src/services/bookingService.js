@@ -177,28 +177,42 @@ class BookingService {
       });
     });
 
-    // Create notification
-    await NotificationService.notifyBookingCreated(userId, booking, resource);
+    // Create notification (don't fail booking if notification fails)
+    try {
+      await NotificationService.notifyBookingCreated(userId, booking, resource);
+    } catch (err) {
+      console.error('Failed to create booking notification:', err.message);
+    }
 
-    // Log email
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    await MessageService.sendBookingConfirmation(user, booking, resource);
-
-    // Audit log
-    await AuditService.log({
-      userId,
-      action: AuditActions.BOOKING_CREATE,
-      entity: 'Booking',
-      entityId: booking.id,
-      ipAddress,
-      details: {
-        resourceId,
-        resourceName: resource.name,
-        startTime,
-        endTime,
-        totalPrice
+    // Log email (don't fail booking if email logging fails)
+    try {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (user) {
+        await MessageService.sendBookingConfirmation(user, booking, resource);
       }
-    });
+    } catch (err) {
+      console.error('Failed to send booking confirmation:', err.message);
+    }
+
+    // Audit log (don't fail booking if audit fails)
+    try {
+      await AuditService.log({
+        userId,
+        action: AuditActions.BOOKING_CREATE,
+        entity: 'Booking',
+        entityId: booking.id,
+        ipAddress,
+        details: {
+          resourceId,
+          resourceName: resource.name,
+          startTime,
+          endTime,
+          totalPrice
+        }
+      });
+    } catch (err) {
+      console.error('Failed to create audit log:', err.message);
+    }
 
     return booking;
   }
@@ -231,27 +245,41 @@ class BookingService {
       include: { resource: true }
     });
 
-    // Create notification
-    await NotificationService.notifyBookingCancelled(booking.userId, booking, booking.resource);
+    // Create notification (don't fail cancellation if notification fails)
+    try {
+      await NotificationService.notifyBookingCancelled(booking.userId, booking, booking.resource);
+    } catch (err) {
+      console.error('Failed to create cancellation notification:', err.message);
+    }
 
-    // Log email
-    const user = await prisma.user.findUnique({ where: { id: booking.userId } });
-    await MessageService.sendBookingCancellation(user, booking, booking.resource);
-
-    // Audit log
-    await AuditService.log({
-      userId,
-      action: AuditActions.BOOKING_CANCEL,
-      entity: 'Booking',
-      entityId: bookingId,
-      ipAddress,
-      details: {
-        resourceId: booking.resourceId,
-        resourceName: booking.resource.name,
-        originalStatus: booking.status,
-        cancelledBy: isAdmin ? 'admin' : 'user'
+    // Log email (don't fail cancellation if email fails)
+    try {
+      const user = await prisma.user.findUnique({ where: { id: booking.userId } });
+      if (user) {
+        await MessageService.sendBookingCancellation(user, booking, booking.resource);
       }
-    });
+    } catch (err) {
+      console.error('Failed to send cancellation email:', err.message);
+    }
+
+    // Audit log (don't fail cancellation if audit fails)
+    try {
+      await AuditService.log({
+        userId,
+        action: AuditActions.BOOKING_CANCEL,
+        entity: 'Booking',
+        entityId: bookingId,
+        ipAddress,
+        details: {
+          resourceId: booking.resourceId,
+          resourceName: booking.resource.name,
+          originalStatus: booking.status,
+          cancelledBy: isAdmin ? 'admin' : 'user'
+        }
+      });
+    } catch (err) {
+      console.error('Failed to create audit log:', err.message);
+    }
 
     return updatedBooking;
   }
