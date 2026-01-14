@@ -19,7 +19,7 @@ const navigation = [
 
 export default function UserSidebar() {
   const location = useLocation();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
   const isActive = (href) => {
     if (href === '/dashboard') {
@@ -29,41 +29,60 @@ export default function UserSidebar() {
   };
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 min-h-screen flex flex-col">
+    <div className="w-72 bg-gradient-to-b from-primary-600 to-primary-700 min-h-screen flex flex-col shadow-xl">
       {/* Logo */}
-      <div className="flex items-center px-6 py-4 border-b border-gray-200">
-        <CalendarIcon className="h-8 w-8 text-primary-600" />
-        <span className="ml-2 text-xl font-bold text-gray-900">BookingPMS</span>
+      <div className="flex items-center px-6 py-5">
+        <div className="bg-white/20 p-2 rounded-xl">
+          <CalendarDaysIcon className="h-8 w-8 text-white" />
+        </div>
+        <span className="ml-3 text-xl font-bold text-white">BookingPMS</span>
+      </div>
+
+      {/* User Profile Card */}
+      <div className="mx-4 mb-6 p-4 bg-white/10 rounded-xl">
+        <div className="flex items-center space-x-3">
+          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+            <span className="text-lg font-bold text-white">
+              {user?.firstName?.[0]?.toUpperCase() || 'U'}
+            </span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-white truncate">
+              {user?.firstName} {user?.lastName}
+            </p>
+            <p className="text-xs text-white/70 truncate">{user?.email}</p>
+          </div>
+        </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-1">
+      <nav className="flex-1 px-4 space-y-1">
         {navigation.map((item) => (
           <Link
             key={item.name}
             to={item.href}
             className={`
-              flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors
+              flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
               ${isActive(item.href)
-                ? 'bg-primary-50 text-primary-700'
-                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                ? 'bg-white text-primary-600 shadow-lg'
+                : 'text-white/80 hover:bg-white/10 hover:text-white'
               }
             `}
           >
-            <item.icon className={`h-5 w-5 mr-3 ${isActive(item.href) ? 'text-primary-600' : ''}`} />
+            <item.icon className={`h-5 w-5 mr-3 ${isActive(item.href) ? 'text-primary-500' : ''}`} />
             {item.name}
           </Link>
         ))}
       </nav>
 
       {/* Logout */}
-      <div className="px-4 py-4 border-t border-gray-200">
+      <div className="p-4 border-t border-white/10">
         <button
           onClick={logout}
-          className="flex items-center w-full px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+          className="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-all duration-200"
         >
           <ArrowLeftOnRectangleIcon className="h-5 w-5 mr-3" />
-          Logout
+          Sign Out
         </button>
       </div>
     </div>

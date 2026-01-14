@@ -10,12 +10,14 @@ class NotificationService {
   /**
    * Create a notification
    */
-  static async create({ userId, title, message }) {
+  static async create({ userId, type = 'SYSTEM', title, message, metadata = null }) {
     return prisma.notification.create({
       data: {
         userId,
+        type,
         title,
-        message
+        message,
+        metadata
       }
     });
   }
@@ -117,30 +119,37 @@ class NotificationService {
   static async notifyBookingCreated(userId, booking, resource) {
     return this.create({
       userId,
+      type: 'BOOKING_CREATED',
       title: 'Booking Confirmed',
-      message: `Your booking for "${resource.name}" from ${new Date(booking.startTime).toLocaleString()} to ${new Date(booking.endTime).toLocaleString()} has been confirmed. Total: $${booking.totalPrice}`
+      message: `Your booking for "${resource.name}" from ${new Date(booking.startTime).toLocaleString()} to ${new Date(booking.endTime).toLocaleString()} has been confirmed. Total: $${booking.totalPrice}`,
+      metadata: { bookingId: booking.id, resourceId: resource.id }
     });
   }
 
   static async notifyBookingCancelled(userId, booking, resource) {
     return this.create({
       userId,
+      type: 'BOOKING_CANCELLED',
       title: 'Booking Cancelled',
-      message: `Your booking for "${resource.name}" on ${new Date(booking.startTime).toLocaleString()} has been cancelled.`
+      message: `Your booking for "${resource.name}" on ${new Date(booking.startTime).toLocaleString()} has been cancelled.`,
+      metadata: { bookingId: booking.id, resourceId: resource.id }
     });
   }
 
   static async notifyBookingUpdated(userId, booking, resource) {
     return this.create({
       userId,
+      type: 'BOOKING_REMINDER',
       title: 'Booking Updated',
-      message: `Your booking for "${resource.name}" has been updated. New time: ${new Date(booking.startTime).toLocaleString()} to ${new Date(booking.endTime).toLocaleString()}`
+      message: `Your booking for "${resource.name}" has been updated. New time: ${new Date(booking.startTime).toLocaleString()} to ${new Date(booking.endTime).toLocaleString()}`,
+      metadata: { bookingId: booking.id, resourceId: resource.id }
     });
   }
 
   static async notifyWelcome(userId, firstName) {
     return this.create({
       userId,
+      type: 'WELCOME',
       title: 'Welcome!',
       message: `Welcome to BookingPMS, ${firstName || 'there'}! Start exploring our resources and make your first booking.`
     });
