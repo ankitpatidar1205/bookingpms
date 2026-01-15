@@ -18,6 +18,8 @@ import Register from './pages/auth/Register';
 import Home from './pages/guest/Home';
 import Resources from './pages/guest/Resources';
 import Calendar from './pages/guest/Calendar';
+import CloudbedsAvailability from './pages/guest/CloudbedsAvailability';
+import CloudbedsCallback from './pages/guest/CloudbedsCallback';
 
 // User Pages
 import UserDashboard from './pages/user/Dashboard';
@@ -60,6 +62,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/resources" element={<Resources />} />
         <Route path="/calendar" element={<Calendar />} />
+        <Route path="/availability" element={<CloudbedsAvailability />} />
+        <Route path="/cloudbeds/callback" element={<CloudbedsCallback />} />
       </Route>
 
       {/* User Dashboard Routes */}

@@ -7,16 +7,16 @@ const config = {
   // Change this when deploying to different environments
 
   // For local development (with proxy)
-  // API_BASE_URL: '/api',
+  API_BASE_URL: '/api',
 
   // For local development (direct)
   // API_BASE_URL: 'http://localhost:5000/api',
 
   // For production server
-  API_BASE_URL: 'https://bookingpms-production.up.railway.app/api',
+  // API_BASE_URL: 'https://bookingpms-production.up.railway.app/api',
 
   // Current setting:
-  // API_BASE_URL: '/api',
+  // API_BASE_URL: 'http://207.180.240.176:9004/api',
 
   // App settings
   APP_NAME: 'BookingPMS',
