@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import cloudbedsService from '../../services/cloudbedsService';
-import api from '../../services/api';
 import { Card, CardBody, Loading } from '../../components/common';
 import toast from 'react-hot-toast';
 import {
@@ -107,52 +106,26 @@ export default function CloudbedsAvailability() {
     });
   };
 
-  // Start OAuth authorization flow
-  const handleAuthorize = async () => {
-    try {
-      const response = await cloudbedsService.getStatus();
-      // Get the auth URL from the API
-      const authResponse = await api.get('/cloudbeds/auth/url');
-      if (authResponse.data.success && authResponse.data.data.authUrl) {
-        window.location.href = authResponse.data.data.authUrl;
-      }
-    } catch (err) {
-      toast.error('Failed to start authorization');
-      console.error(err);
-    }
-  };
-
-  // Connection not established - show authorize button if needsAuth
+  // Connection not established - show friendly message to guests
   if (!loading && connectionStatus && !connectionStatus.connected) {
-    const needsAuth = connectionStatus.needsAuth;
-
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Card className={needsAuth ? "border-blue-200 bg-blue-50" : "border-red-200 bg-red-50"}>
+        <Card className="border-gray-200 bg-gray-50">
           <CardBody className="p-8 text-center">
-            <ExclamationCircleIcon className={`h-16 w-16 ${needsAuth ? 'text-blue-500' : 'text-red-500'} mx-auto mb-4`} />
-            <h2 className={`text-xl font-bold ${needsAuth ? 'text-blue-800' : 'text-red-800'} mb-2`}>
-              {needsAuth ? 'Authorization Required' : 'Connection Error'}
+            <CalendarDaysIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-gray-700 mb-2">
+              Availability Coming Soon
             </h2>
-            <p className={`${needsAuth ? 'text-blue-600' : 'text-red-600'} mb-6`}>
-              {connectionStatus.message || 'Unable to connect to Cloudbeds API'}
+            <p className="text-gray-500 mb-6">
+              Our live availability calendar is being set up. Please check back later or contact us directly for reservations.
             </p>
             <div className="flex justify-center gap-4">
-              {needsAuth ? (
-                <button
-                  onClick={handleAuthorize}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                >
-                  Authorize with Cloudbeds
-                </button>
-              ) : (
-                <button
-                  onClick={checkConnection}
-                  className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
-                >
-                  Retry Connection
-                </button>
-              )}
+              <button
+                onClick={checkConnection}
+                className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
+              >
+                Refresh
+              </button>
             </div>
           </CardBody>
         </Card>
