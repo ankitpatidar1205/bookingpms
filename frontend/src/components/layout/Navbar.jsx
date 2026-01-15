@@ -41,7 +41,8 @@ export default function Navbar() {
   const guestLinks = [
     { name: 'Home', href: '/' },
     { name: 'Resources', href: '/resources' },
-    { name: 'Calendar', href: '/calendar' }
+    { name: 'Calendar', href: '/calendar' },
+    { name: 'Live Availability', href: '/availability' }
   ];
 
   return (
