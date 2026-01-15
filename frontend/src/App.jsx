@@ -31,6 +31,7 @@ import AdminUsers from './pages/admin/Users';
 import AdminResources from './pages/admin/Resources';
 import AdminCalendar from './pages/admin/AdminCalendar';
 import AuditLogs from './pages/admin/AuditLogs';
+import CloudbedsSetup from './pages/admin/CloudbedsSetup';
 
 // Shared Pages
 import Notifications from './pages/shared/Notifications';
@@ -92,6 +93,7 @@ function App() {
         <Route path="analytics" element={<AdminDashboard />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="settings" element={<Profile />} />
+        <Route path="cloudbeds" element={<CloudbedsSetup />} />
       </Route>
 
       {/* Catch all - redirect to home */}

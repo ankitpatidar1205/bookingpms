@@ -10,7 +10,8 @@ import {
   Cog6ToothIcon,
   ArrowLeftOnRectangleIcon,
   CalendarDaysIcon,
-  XMarkIcon
+  XMarkIcon,
+  CloudIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../context/AuthContext';
 
@@ -21,6 +22,7 @@ const navigation = [
   { name: 'Users', href: '/admin/users', icon: UsersIcon },
   { name: 'Analytics', href: '/admin/analytics', icon: ChartBarIcon },
   { name: 'Audit Logs', href: '/admin/audit-logs', icon: ClipboardDocumentListIcon },
+  { name: 'Cloudbeds', href: '/admin/cloudbeds', icon: CloudIcon },
   { name: 'Notifications', href: '/admin/notifications', icon: BellIcon },
   { name: 'Settings', href: '/admin/settings', icon: Cog6ToothIcon }
 ];
