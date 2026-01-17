@@ -7,7 +7,7 @@ export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
@@ -16,16 +16,17 @@ export default function AdminLayout() {
         />
       )}
 
-      {/* Sidebar - hidden on mobile, shown on desktop */}
+      {/* Sidebar - fixed position, independent scroll */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0
+        fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out 
+        lg:fixed lg:translate-x-0
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <AdminSidebar onClose={() => setSidebarOpen(false)} />
       </div>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* Main content - scrollable */}
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-60">
         {/* Mobile header */}
         <header className="lg:hidden bg-primary-500 text-white px-4 py-3 flex items-center justify-between shadow-lg sticky top-0 z-30">
           <button
@@ -38,7 +39,7 @@ export default function AdminLayout() {
           <div className="w-10" /> {/* Spacer for centering */}
         </header>
 
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
           <div className="p-4 sm:p-6 lg:p-8">
             <Outlet />
           </div>

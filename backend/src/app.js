@@ -11,13 +11,36 @@ const app = express();
 // Security middleware
 app.use(helmet());
 
-// CORS configuration
-app.use(cors({
-  origin: config.cors.origin,
-  credentials: true,
+// CORS configuration - supports multiple origins
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = Array.isArray(config.cors.origin) 
+      ? config.cors.origin 
+      : [config.cors.origin];
+    
+    // Normalize origins (remove trailing slash for comparison)
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    const normalizedAllowed = allowedOrigins.map(o => o.replace(/\/$/, ''));
+    
+    if (normalizedAllowed.indexOf(normalizedOrigin) !== -1 || 
+        normalizedAllowed.includes('*') ||
+        normalizedOrigin.includes('bookingpms.netlify.app')) {
+      callback(null, true);
+    } else {
+      console.log('[CORS] Blocked origin:', origin);
+      console.log('[CORS] Allowed origins:', normalizedAllowed);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: config.cors.credentials,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
-}));
+};
+
+app.use(cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({
@@ -57,6 +80,15 @@ app.use(errorHandler);
 // Start server
 const PORT = config.port;
 app.listen(PORT, () => {
+  // Log environment variables status (for debugging)
+  console.log('\n[Environment Check]');
+  console.log('NODE_ENV:', process.env.NODE_ENV || 'not set');
+  console.log('CLOUDBEDS_API_KEY:', process.env.CLOUDBEDS_API_KEY ? `Set (${process.env.CLOUDBEDS_API_KEY.substring(0, 10)}...)` : 'NOT SET');
+  console.log('CLOUDBEDS_CLIENT_ID:', process.env.CLOUDBEDS_CLIENT_ID ? 'Set' : 'NOT SET');
+  console.log('CLOUDBEDS_CLIENT_SECRET:', process.env.CLOUDBEDS_CLIENT_SECRET ? 'Set' : 'NOT SET');
+  console.log('FRONTEND_URL:', process.env.FRONTEND_URL || 'not set');
+  console.log('\n');
+  
   console.log(`
 ╔════════════════════════════════════════════════════════════╗
 ║                                                            ║

@@ -27,7 +27,11 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const message = error.response?.data?.message || 'An error occurred';
+    const url = error.config?.url || '';
 
+    // Don't show toast for Cloudbeds API 404 errors (endpoints might not be available)
+    const isCloudbedsEndpoint = url.includes('/cloudbeds/');
+    
     // Handle specific status codes
     switch (error.response?.status) {
       case 401:
@@ -42,7 +46,11 @@ api.interceptors.response.use(
         toast.error('You do not have permission to perform this action');
         break;
       case 404:
-        toast.error('Resource not found');
+        // Only show toast for non-Cloudbeds endpoints
+        if (!isCloudbedsEndpoint) {
+          toast.error('Resource not found');
+        }
+        // For Cloudbeds endpoints, silently fail (endpoint might not be available yet)
         break;
       case 409:
         toast.error(message);
@@ -51,10 +59,16 @@ api.interceptors.response.use(
         toast.error('Too many requests. Please try again later.');
         break;
       case 500:
-        toast.error('Server error. Please try again later.');
+        // Only show toast for non-Cloudbeds endpoints
+        if (!isCloudbedsEndpoint) {
+          toast.error('Server error. Please try again later.');
+        }
         break;
       default:
-        toast.error(message);
+        // Only show toast for non-Cloudbeds endpoints
+        if (!isCloudbedsEndpoint) {
+          toast.error(message);
+        }
     }
 
     return Promise.reject(error);

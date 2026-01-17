@@ -10,7 +10,8 @@ import {
   Cog6ToothIcon,
   ArrowLeftOnRectangleIcon,
   CalendarDaysIcon,
-  XMarkIcon
+  XMarkIcon,
+  CloudIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../context/AuthContext';
 
@@ -21,6 +22,7 @@ const navigation = [
   { name: 'Users', href: '/admin/users', icon: UsersIcon },
   { name: 'Analytics', href: '/admin/analytics', icon: ChartBarIcon },
   { name: 'Audit Logs', href: '/admin/audit-logs', icon: ClipboardDocumentListIcon },
+  { name: 'Cloudbeds', href: '/admin/cloudbeds', icon: CloudIcon },
   { name: 'Notifications', href: '/admin/notifications', icon: BellIcon },
   { name: 'Settings', href: '/admin/settings', icon: Cog6ToothIcon }
 ];
@@ -41,9 +43,9 @@ export default function AdminSidebar({ onClose }) {
   };
 
   return (
-    <div className="w-60 bg-primary-500 min-h-screen flex flex-col">
+    <div className="w-60 bg-primary-500 h-screen flex flex-col fixed left-0 top-0">
       {/* Logo */}
-      <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+      <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 flex-shrink-0">
         <div className="flex items-center">
           <div className="bg-white/15 p-2 rounded-xl">
             <CalendarDaysIcon className="h-8 w-8 text-white" />
@@ -65,7 +67,7 @@ export default function AdminSidebar({ onClose }) {
       </div>
 
       {/* Admin Profile */}
-      <div className="mx-4 my-4 p-4 bg-white/10 rounded-xl border border-white/10">
+      <div className="mx-4 my-4 p-4 bg-white/10 rounded-xl border border-white/10 flex-shrink-0">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-accent-500 rounded-full flex items-center justify-center flex-shrink-0">
             <span className="text-sm font-bold text-white">
@@ -127,7 +129,7 @@ export default function AdminSidebar({ onClose }) {
       </nav>
 
       {/* Logout */}
-      <div className="p-4 border-t border-white/10">
+      <div className="p-4 border-t border-white/10 flex-shrink-0">
         <button
           onClick={() => {
             logout();

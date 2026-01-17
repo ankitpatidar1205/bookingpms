@@ -10,7 +10,13 @@ module.exports = {
   },
 
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: process.env.FRONTEND_URL 
+      ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
+      : [
+          'http://localhost:5173',
+          'https://bookingpms.netlify.app',
+          'https://bookingpms.netlify.app/'
+        ],
     credentials: true
   },
 
@@ -35,6 +41,7 @@ module.exports = {
   cloudbeds: {
     clientId: process.env.CLOUDBEDS_CLIENT_ID,
     clientSecret: process.env.CLOUDBEDS_CLIENT_SECRET,
+    apiKey: process.env.CLOUDBEDS_API_KEY,
     hotelSlug: process.env.CLOUDBEDS_HOTEL_SLUG || 'hotel'
   }
 };
